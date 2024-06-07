@@ -32,7 +32,6 @@ class API_Requests:
             method= method,
             headers= headers,  
             auth=(api_key,''))
-        json
         #if there was an error
         if not result:
             #I've used this method instead of json to restrict unsesesary imports
