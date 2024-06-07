@@ -1,10 +1,12 @@
 import requests
 
+#x-api-key
 
 class API_Requests:
 
     def __init__(self) -> None:
-        self.no_url_given_error = "The url was not valid"
+        self.url_error = "The url was not valid"
+        self.authorization_error = "requried autherization not given"
 
     def APICalls(self,
         url:str, 
@@ -14,67 +16,42 @@ class API_Requests:
         api_key: str = None):
 
         if url is None or url == "":
-            return self.no_url_given_error
+            print(self.url_error)
+            return None
 
-        if method == "get":
-             return self.get(url , 
-            authorization_token , 
-            content_type,
-            api_key)
-        elif method == "post":
-            return self.post(url , 
-                authorization_token , 
-                content_type,
-                api_key)
-    
-
-    def get(self,
-        url:str, 
-        authorization_token:str = None, 
-        content_type: str ="application/json",
-        api_key: str = None):
-
-        headers = {'Content-type': content_type}
-
-        #if an access tokenwas given, adds it to the header
+        headers = {}
+        headers["Content-type"] = content_type
         if authorization_token is not None:
-            headers["Authorization"] = "access_token " + authorization_token
-        
-        # makes sure an api key is sent only if it is given
-        if api_key is None:
+            headers["Authorization"] = authorization_token
+        #In testing, I found that my test, companie house, wouldn't except this, so 
+        #I have chosen to use auth=(api_key,"") instead
+        #if api_key is not None :
+            #headers["x-api-key"] = api_key
+        result = requests.request(
+            url= url,
+            method= method,
+            headers= headers,  
+            auth=(api_key,''))
+        json
+        #if there was an error
+        if not result:
+            #I've used this method instead of json to restrict unsesesary imports
+            if result.text.__contains__("error"):
+                #returns the error thrown bye the API
+                start_index_of_error = result.text.find("error") + 8
+                end_index_of_error = result.text.find("\"", start_index_of_error, result.text.__len__())
+                print("Reached API with error: " +result.text[start_index_of_error: end_index_of_error])
+                return None
             
-            returned_value = requests.get(
-                url= url, 
-                headers= headers,
-                auth = (api_key,'')
-                )
-            return returned_value.text
-        else:
+            elif result.text.__contains__("message"):
+                #returns the fair
+                start_index_of_error = result.text.find("message") + 10
+                end_index_of_error = result.text.find("\"", start_index_of_error, result.text.__len__())
+                print("failed to reach API, message: " +result.text[start_index_of_error: end_index_of_error])
+                return None
 
-            returned_value = requests.get(
-                url= url, 
-                headers= headers,
-                )
-            return returned_value.text
+            else:
+                print("Unknown error: " + result.text)
+                return None
 
-    def post(self,
-        url:str, 
-        authorization_token:str = None, 
-        content_type: str ="application/json",
-        api_key: str = None):
-
-        headers = {'Content-type': content_type}
-
-        #if an access tokenwas given, adds it to the header
-        if authorization_token is not None:
-            headers["Authorization"] = "access_token " + authorization_token
-        
-        # makes sure an api key is sent only if it is given
-        if api_key is None:
-            
-            returned_value = requests.post( url= url, headers= headers,  )
-            return returned_value.text
-        else:
-
-            returned_value = requests.get( url= url, headers= headers,auth = (api_key,'') )
-            return returned_value.text
+        return result.text
