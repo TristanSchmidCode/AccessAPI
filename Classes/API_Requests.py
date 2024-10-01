@@ -9,15 +9,21 @@ class API_Requests:
         self.url_error = "The url was not valid"
         self.authorization_error = "requried autherization not given"
 
-    def APICalls(self,
+    def APICalls(
+        
+        self,
+        logger: logging.Logger,
         url:str, 
         method: str = "get", 
         authorization_token:str = None, 
         content_type: str ="application/json",
         api_key: str = None):
-
+        #not sure what to do in this case
+        if not logger:
+            print("No logger given")
+            
         if url is None or url == "":
-            print(self.url_error)
+            logger.error("No URL was given")
             return None
 
         headers = {}
@@ -25,8 +31,6 @@ class API_Requests:
 
         if authorization_token:
             headers["Authorization"] = authorization_token
-        #In testing, I found that my test, companie house, wouldn't except the api key in headers, so 
-        #I have chosen to use auth=(api_key,"") instead
         result = requests.request(
             url= url,
             method= method,
@@ -35,15 +39,15 @@ class API_Requests:
         
         #finds any errors
         try:    
-            #baseline error log
+            #baseline error message
             error_message = "url: {0} returned error code: {1}".format(url,str(result.status_code))
-            
-            if result.status_code >= 500:             
-                logging.error(error_message) 
 
+            if result.status_code >= 500:             
+                logger.error(error_message) 
                 return
             elif result.status_code >= 400:
-                logging.error(error_message + "with message/error: " + result.text) 
+                #400 errors are suposed to return a error message along with the status code
+                logger.error(error_message + " with message/error: " + result.text) 
                 if result.status_code == 401:
                     raise Exception("Error 401: Bad request")
                 elif result.status_code == 404:
@@ -52,20 +56,20 @@ class API_Requests:
                     raise Exception("Error 414: URL too long")
                 else:
                     raise Exception("Error " + str(result.status_code))
-                
             elif result.status_code >= 300:
-                logging.error(error_message)  
+                logger.error(error_message)  
                 raise Exception("Error " + str(result.status_code))
             elif result.status_code < 200:
-                logging.error(error_message)
+                logger.error(error_message)
         except Exception as ex:
-                #stand in for return to user
-                print(ex)
+                # prevents the program sending an error relating to the lack of a logger, 
+                # if logger.error was exicuted without a viable logger
+                if logger:
+                    #stand in for return to user
+                    print(ex)
+                    return None
         #if there were no errors
         else:
             if result.status_code == 204:
-                logging.info("url: {} was reached with code 204".format(url))
+                logger.info("url: {0} was reached with code 204".format(url))
             return result.text
-
-        
-        return result.text
