@@ -1,6 +1,5 @@
-
+import logging
 from Classes.API_Requests import API_Requests
-
 
 def main():
     url = "https://catfact.ninja/fact"
@@ -10,13 +9,21 @@ def main():
     #url = "https://api.agify.io?name=meelad"
 
     #url = "https://datausa.io/api/data?drilldowns=Nation&measures=Population"
-    accessor = API_Requests()
-    print(accessor.APICalls(
+    logger = logging.getLogger(__name__)
+    console_handler = logging.StreamHandler()
+    logger.addHandler(console_handler)
+
+    try:
+        accessor = API_Requests()
+        print(accessor.APICalls(
+        logger = logger,
         method= "get",
         url= url,
         content_type= "multipart/form-data",
-        api_key= "kdnfjsdn"
         ))
+    except:
+        print("failed")
+
 
     
     
