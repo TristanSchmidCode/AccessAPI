@@ -47,15 +47,17 @@ class API_Requests:
                 return
             elif result.status_code >= 400:
                 #400 errors are suposed to return a error message along with the status code
+                
                 logger.error(error_message) 
-                if result.status_code == 401:
-                    raise Exception("Error 401: Bad request")
-                elif result.status_code == 404:
-                    raise Exception("Error 404: client not found")
-                elif result.status_code == 414:
-                    raise Exception("Error 414: URL too long")
-                else:
-                    raise Exception("Error " +str(result.status_code) + " with message/error: " + result.text)
+                match result.status_code:
+                    case 401:
+                        raise Exception("Error 401: Bad request")
+                    case 404:
+                        raise Exception("Error 404: client not found")
+                    case 414:
+                        raise Exception("Error 414: URL too long")
+                    case _:
+                        raise Exception("Error " +str(result.status_code) + " with message/error: " + result.text)
             elif result.status_code >= 300:
                 logger.error(error_message)  
                 raise Exception("Error " +str(result.status_code)+ " with message/error: " + result.text)
