@@ -10,7 +10,6 @@ class API_Requests:
         self.authorization_error = "requried autherization not given"
 
     def APICalls(
-        
         self,
         logger: logging.Logger,
         url:str, 
@@ -40,14 +39,15 @@ class API_Requests:
         #finds any errors
         try:    
             #baseline error message
-            error_message = "url: {0} returned error code: {1}".format(url,str(result.status_code))
+            error_message = "url: {0} returned error code: {1}".format(url,str(result.status_code) + 
+            " with message/error: " + result.text)
 
             if result.status_code >= 500:             
                 logger.error(error_message) 
                 return
             elif result.status_code >= 400:
                 #400 errors are suposed to return a error message along with the status code
-                logger.error(error_message + " with message/error: " + result.text) 
+                logger.error(error_message) 
                 if result.status_code == 401:
                     raise Exception("Error 401: Bad request")
                 elif result.status_code == 404:
@@ -55,10 +55,10 @@ class API_Requests:
                 elif result.status_code == 414:
                     raise Exception("Error 414: URL too long")
                 else:
-                    raise Exception("Error " + str(result.status_code))
+                    raise Exception("Error " +str(result.status_code) + " with message/error: " + result.text)
             elif result.status_code >= 300:
                 logger.error(error_message)  
-                raise Exception("Error " + str(result.status_code))
+                raise Exception("Error " +str(result.status_code)+ " with message/error: " + result.text)
             elif result.status_code < 200:
                 logger.error(error_message)
         except Exception as ex:
